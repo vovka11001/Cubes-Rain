@@ -6,13 +6,13 @@ public class EventHandler : MonoBehaviour
   [SerializeField] private CollisionDetecter[] _collisionDetecters;
   [SerializeField] private Spawner _spawner;
   
-  private HashSet<Cube> _activeCubes = new HashSet<Cube>();
+  private List<Cube> _activeCubes = new List<Cube>();
   
   private void OnEnable()
   {
     foreach (CollisionDetecter collisionDetecter in _collisionDetecters)
       collisionDetecter.OnCollisionEntered += HandlerRelease;
-  }
+    }
 
   private void OnDisable()
   {
@@ -25,19 +25,26 @@ public class EventHandler : MonoBehaviour
     if (cube != null && !_activeCubes.Contains(cube))
     {
         _activeCubes.Add(cube);
-        cube.CountChanged += CheckAndReleaseCube;
-        cube.StartCoroutine();
+
+        Renderer renderer = cube.GetComponent<Renderer>();
+
+        if(renderer != null)
+                renderer.material.color = Random.ColorHSV();
+          
+        cube.TimerStopped += OnCubeCountChanged;
+        cube.StartCountDown();
+
     }
   }
-    
-  private void CheckAndReleaseCube(Cube cube)
-  {
-    if (cube.LifeTime == cube.Count)
+
+    private void OnCubeCountChanged(Cube cube)
     {
-      cube.CountChanged -= CheckAndReleaseCube;
-      _activeCubes.Remove(cube);
-      cube.Stop();
-      _spawner.PoolRelease(cube.gameObject);
+        if (cube != null && _activeCubes.Contains(cube))
+        {
+            cube.TimerStopped -= OnCubeCountChanged;
+
+            _activeCubes.Remove(cube);
+            _spawner.PoolRelease(cube.gameObject);
+        }
     }
-  }
 }
