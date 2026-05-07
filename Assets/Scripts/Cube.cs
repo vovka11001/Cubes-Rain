@@ -3,6 +3,9 @@ using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+[RequireComponent(typeof(Rigidbody))]
+[RequireComponent (typeof(Renderer))]
+
 public class Cube : MonoBehaviour
 {
     private readonly float _minLifeTime = 2;
@@ -13,7 +16,6 @@ public class Cube : MonoBehaviour
     
     public Coroutine Coroutine {get; private set;}
     public float LifeTime {get; private set;}
-    public int Count => _count;
 
     public event Action<Cube> TimerStopped;
 
@@ -23,15 +25,39 @@ public class Cube : MonoBehaviour
         _isCounting = false;
         LifeTime = Random.Range(_minLifeTime, _maxLifeTime + 1);
 
-        if (GetComponent<Rigidbody>() == null)
-            gameObject.AddComponent<Rigidbody>();
-
         Renderer renderer = GetComponent<Renderer>();
 
-        if(renderer != null)
+        if (renderer != null)
         {
             renderer.material.color = Color.white;
         }
+    }
+
+    public void StartCountDown()
+    {
+        if (_isCounting)
+        {
+            return;
+        }
+
+        if (Coroutine != null)
+        {
+            StopCoroutine(Coroutine);
+        }
+
+        _isCounting = true;
+        Coroutine = StartCoroutine(CountDown());
+    }
+
+    public void StopCountDown()
+    {
+        if (Coroutine != null)
+        {
+            StopCoroutine(Coroutine);
+            Coroutine = null;
+        }
+
+        _isCounting = false;
     }
 
     private IEnumerator CountDown()
@@ -52,32 +78,5 @@ public class Cube : MonoBehaviour
 
             yield return wait;
         }
-    }
-
-    public void StartCountDown()
-    {
-        if (_isCounting)
-        {
-            return;
-        }
-        
-        if (Coroutine != null)
-        {
-            StopCoroutine(Coroutine);
-        }
-        
-        _isCounting = true;
-        Coroutine = StartCoroutine(CountDown());
-    }
-
-    public void StopCountDown()
-    {
-        if (Coroutine != null)
-        {
-            StopCoroutine(Coroutine);
-            Coroutine = null;
-        }
-        
-        _isCounting = false;
     }
 }

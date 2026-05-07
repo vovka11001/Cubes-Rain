@@ -133,7 +133,7 @@ GameObject:
   - component: {fileID: 143969522}
   - component: {fileID: 143969521}
   m_Layer: 0
-  m_Name: EventHandler
+  m_Name: CollisionHandler
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -151,10 +151,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57bacaabd58524864a25ad3eac3b9cce, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _collisionDetecters:
-  - {fileID: 1781863736}
-  - {fileID: 1156100632}
-  - {fileID: 464598854}
   _spawner: {fileID: 1438844239}
 --- !u!4 &143969522
 Transform:
@@ -624,7 +620,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 166f2b0dfaac64eed90ca17ca8e897bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _prefab: {fileID: 9114798861662071613, guid: 239f4b9cce1b648a59b13105da5fd726, type: 3}
+  _cube: {fileID: 249327073455101605, guid: 239f4b9cce1b648a59b13105da5fd726, type: 3}
   _platform: {fileID: 1781863735}
 --- !u!4 &1438844240
 Transform:

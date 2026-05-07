@@ -1,9 +1,9 @@
 using System;
 using UnityEngine;
 
-public class CollisionDetecter : MonoBehaviour
+public class Platform : MonoBehaviour
 {
-    public event Action<Cube> OnCollisionEntered;
+    public event Action<Cube> CollisionEntered;
     
     private void OnCollisionEnter(Collision collision)
     {
@@ -11,7 +11,7 @@ public class CollisionDetecter : MonoBehaviour
         
         if (cube != null)
         {
-            OnCollisionEntered?.Invoke(cube);
+            CollisionEntered?.Invoke(cube);
         }
     }
 }
