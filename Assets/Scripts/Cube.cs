@@ -1,5 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -8,22 +10,51 @@ using Random = UnityEngine.Random;
 
 public class Cube : MonoBehaviour
 {
+    private List<Platform> _platforms = new List<Platform>();
+
     private readonly float _minLifeTime = 2;
     private readonly float _maxLifeTime = 5;
     private readonly float _elapsedTime = 1f;
     private int _count = 0;
     private bool _isCounting;
-    
-    public Coroutine Coroutine {get; private set;}
-    public float LifeTime {get; private set;}
+    private bool _isCollided = false;
+    private float _lifeTime;
+
+    private Coroutine _coroutine;
 
     public event Action<Cube> TimerStopped;
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (_isCollided)
+            return;
+
+        Platform platform = collision.gameObject.GetComponent<Platform>();
+
+        if (platform != null && _platforms.Contains(platform))
+        {
+            _isCollided = true;
+
+            StartCountDown();
+
+            Renderer renderer = GetComponent<Renderer>();
+
+            if (renderer != null)
+            {
+                renderer.material.color = Random.ColorHSV();
+            }
+
+        }
+    }
+
     private void OnEnable()
     {
+        _platforms = FindObjectsByType<Platform>(FindObjectsSortMode.None).ToList();
+
         _count = 0;
         _isCounting = false;
-        LifeTime = Random.Range(_minLifeTime, _maxLifeTime + 1);
+        _isCollided= false;
+        _lifeTime = Random.Range(_minLifeTime, _maxLifeTime + 1f);
 
         Renderer renderer = GetComponent<Renderer>();
 
@@ -33,28 +64,28 @@ public class Cube : MonoBehaviour
         }
     }
 
-    public void StartCountDown()
+    private void StartCountDown()
     {
         if (_isCounting)
         {
             return;
         }
 
-        if (Coroutine != null)
+        if (_coroutine != null)
         {
-            StopCoroutine(Coroutine);
+            StopCoroutine(_coroutine);
         }
 
         _isCounting = true;
-        Coroutine = StartCoroutine(CountDown());
+        _coroutine = StartCoroutine(CountDown());
     }
 
-    public void StopCountDown()
+    private void StopCountDown()
     {
-        if (Coroutine != null)
+        if (_coroutine != null)
         {
-            StopCoroutine(Coroutine);
-            Coroutine = null;
+            StopCoroutine(_coroutine);
+            _coroutine = null;
         }
 
         _isCounting = false;
@@ -68,7 +99,7 @@ public class Cube : MonoBehaviour
         {
             _count++;
 
-            if (_count >= LifeTime)
+            if (_count >= _lifeTime)
             {
                 StopCountDown();
                 TimerStopped?.Invoke(this);

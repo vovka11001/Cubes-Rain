@@ -14,10 +14,10 @@ public class Spawner : MonoBehaviour
    
    private ObjectPool<Cube> _pool;
 
-   private void Awake()
+    private void Awake()
    {
       _pool = new ObjectPool<Cube>(
-         createFunc: () => Instantiate(_cube) ,
+         createFunc: () => CreateCube(),
          actionOnGet: (cube) => OnActionOnGet(cube),
          actionOnRelease: (cube) => cube.gameObject.SetActive(false),
          actionOnDestroy: (cube) => Destroy(cube.gameObject),
@@ -31,9 +31,16 @@ public class Spawner : MonoBehaviour
        InvokeRepeating(nameof(GetCube), 0f, _repeatRate);
    }
 
-   public void PoolRelease(Cube cube)
+    private Cube CreateCube()
+    {
+        Cube cube = Instantiate(_cube);
+        cube.TimerStopped += PoolRelease; 
+        return cube;
+    }
+
+    private void PoolRelease(Cube cube)
    {
-       if (cube.gameObject == null)
+       if (cube == null)
        {
            return;
        }
@@ -43,7 +50,8 @@ public class Spawner : MonoBehaviour
            return;
        }
 
-       _pool.Release(cube);
+        cube.TimerStopped -= PoolRelease;
+        _pool.Release(cube);
    }
     private void OnActionOnGet(Cube cube)
    {
