@@ -23,7 +23,7 @@ public class Cube : MonoBehaviour
     {
         if (_isCollided)
             return;
-
+        
         Platform platform = collision.gameObject.GetComponent<Platform>();
 
         if (platform != null)

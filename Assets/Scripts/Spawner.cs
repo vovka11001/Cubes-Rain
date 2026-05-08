@@ -69,15 +69,11 @@ public class Spawner : MonoBehaviour
    private void StartCountDown()
    {
        if (_isCounting)
-       {
            return;
-       }
-
+       
        if (_coroutine != null)
-       {
            StopCoroutine(_coroutine);
-       }
-
+       
        _isCounting = true;
        _coroutine = StartCoroutine(CountDown());
    }
