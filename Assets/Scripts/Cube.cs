@@ -45,21 +45,15 @@ public class Cube : MonoBehaviour
 
     private void Awake()
     {
-        if (TryGetComponent(out Renderer renderer))
-        {
-            if (renderer != null)
-            {
-                renderer.material.color = Color.white;
-            }
-        }
-
-        if (TryGetComponent(out Rigidbody rigidbody))
-        {
-            if (rigidbody != null)
-            {
+        var renderer =  GetComponent<Renderer>();
+        
+        if (renderer != null)
+            renderer.material.color = Color.white;
+        
+        var rigidbody = GetComponent<Rigidbody>();
+        
+        if (rigidbody != null) 
                 rigidbody.velocity = Vector3.zero;
-            }
-        }
     }
 
     private void OnEnable()
