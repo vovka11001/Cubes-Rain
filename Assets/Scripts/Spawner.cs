@@ -4,23 +4,24 @@ using UnityEngine.Pool;
 
 public class Spawner : MonoBehaviour
 {
-   [SerializeField] private Cube _cube;
+   [SerializeField] private Cube _cubePrefab;
    [SerializeField] private Transform _platform;
    
+   private static readonly float _elapsedTime = 1f;
    private readonly float _spawnRadius = 4f; 
    private readonly float _height = 10f;
    private readonly int _poolSize = 10;
    private readonly int _poolCapasity = 10;
-   private readonly float _elapsedTime = 1f;
    private bool _isCounting;
    
+   private WaitForSeconds _waitForSeconds = new WaitForSeconds(_elapsedTime);
    private Coroutine _coroutine;
    private ObjectPool<Cube> _pool;
 
     private void Awake()
    {
       _pool = new ObjectPool<Cube>(
-         createFunc: () => Instantiate(_cube),
+         createFunc: () => Instantiate(_cubePrefab),
          actionOnGet: (cube) => OnActionOnGet(cube),
          actionOnRelease: (cube) => OnReleaseCube(cube),
          actionOnDestroy: (cube) => Destroy(cube.gameObject),
@@ -54,25 +55,15 @@ public class Spawner : MonoBehaviour
     
     private void OnActionOnGet(Cube cube)
    {
-      float x = Random.Range(-_spawnRadius, _spawnRadius);
-      float z = Random.Range(-_spawnRadius, _spawnRadius);
+      float positionX = Random.Range(-_spawnRadius, _spawnRadius);
+      float positionZ = Random.Range(-_spawnRadius, _spawnRadius);
 
-      Vector3 spawnPos = _platform.position + new Vector3(x, _height, z);
+      Vector3 spawnPos = _platform.position + new Vector3(positionX, _height, positionZ);
 
       cube.gameObject.transform.position = spawnPos;
       
-      var rigidbody = cube.GetComponent<Rigidbody>();
-      
-      if (rigidbody != null)
-         rigidbody.velocity = Vector3.zero;
-      
       cube.gameObject.SetActive(true);
       cube.TimerStopped += PoolRelease;
-   }
-
-   private void GetCube()
-   {
-      _pool.Get();
    }
    
    private void StartCountDown()
@@ -93,12 +84,10 @@ public class Spawner : MonoBehaviour
 
    private IEnumerator CountDown()
    {
-       var wait = new WaitForSeconds(_elapsedTime);
-
        while (_isCounting)
        {
-           GetCube();
-           yield return wait;
+           _pool.Get();
+           yield return _waitForSeconds;
        }
    }
 }

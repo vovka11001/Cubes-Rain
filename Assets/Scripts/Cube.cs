@@ -1,7 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -10,18 +8,15 @@ using Random = UnityEngine.Random;
 
 public class Cube : MonoBehaviour
 {
-    private List<Platform> _platforms = new List<Platform>();
-
     private readonly float _minLifeTime = 2;
     private readonly float _maxLifeTime = 5;
     private readonly float _elapsedTime = 1f;
-    private int _count = 0;
+    private int _count;
     private bool _isCounting;
     private bool _isCollided;
     private float _lifeTime;
 
     private Coroutine _coroutine;
-
     public event Action<Cube> TimerStopped;
 
     private void OnCollisionEnter(Collision collision)
@@ -31,36 +26,43 @@ public class Cube : MonoBehaviour
 
         Platform platform = collision.gameObject.GetComponent<Platform>();
 
-        if (platform != null && _platforms.Contains(platform))
+        if (platform != null)
         {
             _isCollided = true;
 
             StartCountDown();
 
-            Renderer renderer = GetComponent<Renderer>();
-
-            if (renderer != null)
+            if (TryGetComponent(out Renderer renderer))
             {
-                renderer.material.color = Random.ColorHSV();
+                if (renderer != null)
+                {
+                    renderer.material.color = Random.ColorHSV();
+                }
             }
-
         }
     }
 
     private void OnEnable()
     {
-        _platforms = FindObjectsByType<Platform>(FindObjectsSortMode.None).ToList();
-
         _count = 0;
         _isCounting = false;
         _isCollided= false;
         _lifeTime = Random.Range(_minLifeTime, _maxLifeTime + 1f);
 
-        Renderer renderer = GetComponent<Renderer>();
-
-        if (renderer != null)
+        if (TryGetComponent(out Renderer renderer))
         {
-            renderer.material.color = Color.white;
+            if (renderer != null)
+            {
+                renderer.material.color = Color.white;
+            }
+        }
+
+        if (TryGetComponent(out Rigidbody rigidbody))
+        {
+            if (rigidbody != null)
+            {
+                rigidbody.velocity = Vector3.zero;
+            }
         }
     }
     
@@ -72,14 +74,10 @@ public class Cube : MonoBehaviour
     private void StartCountDown()
     {
         if (_isCounting)
-        {
             return;
-        }
-
-        if (_coroutine != null)
-        {
+        
+        if (_coroutine != null) 
             StopCoroutine(_coroutine);
-        }
 
         _isCounting = true;
         _coroutine = StartCoroutine(CountDown());
