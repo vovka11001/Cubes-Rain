@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -10,16 +11,18 @@ public class Spawner : MonoBehaviour
    private readonly float _height = 10f;
    private readonly int _poolSize = 10;
    private readonly int _poolCapasity = 10;
-   private readonly float _repeatRate = 1f;
+   private readonly float _elapsedTime = 1f;
+   private bool _isCounting;
    
+   private Coroutine _coroutine;
    private ObjectPool<Cube> _pool;
 
     private void Awake()
    {
       _pool = new ObjectPool<Cube>(
-         createFunc: () => CreateCube(),
+         createFunc: () => Instantiate(_cube),
          actionOnGet: (cube) => OnActionOnGet(cube),
-         actionOnRelease: (cube) => cube.gameObject.SetActive(false),
+         actionOnRelease: (cube) => OnReleaseCube(cube),
          actionOnDestroy: (cube) => Destroy(cube.gameObject),
          collectionCheck: true,
          defaultCapacity: _poolCapasity,
@@ -28,31 +31,27 @@ public class Spawner : MonoBehaviour
 
    private void Start()
    {
-       InvokeRepeating(nameof(GetCube), 0f, _repeatRate);
+       StartCountDown();
    }
-
-    private Cube CreateCube()
-    {
-        Cube cube = Instantiate(_cube);
-        cube.TimerStopped += PoolRelease; 
-        return cube;
-    }
 
     private void PoolRelease(Cube cube)
    {
        if (cube == null)
-       {
-           return;
-       }
-
+        return;
+       
        if (cube.gameObject.activeInHierarchy == false)
-       {
            return;
-       }
-
-        cube.TimerStopped -= PoolRelease;
-        _pool.Release(cube);
+       
+       if (cube != null && cube.gameObject.activeInHierarchy)
+           _pool.Release(cube);
    }
+    
+    private void OnReleaseCube(Cube cube)
+    {
+        cube.TimerStopped -= PoolRelease;
+        cube.gameObject.SetActive(false);
+    }
+    
     private void OnActionOnGet(Cube cube)
    {
       float x = Random.Range(-_spawnRadius, _spawnRadius);
@@ -68,10 +67,38 @@ public class Spawner : MonoBehaviour
          rigidbody.velocity = Vector3.zero;
       
       cube.gameObject.SetActive(true);
+      cube.TimerStopped += PoolRelease;
    }
 
    private void GetCube()
    {
       _pool.Get();
+   }
+   
+   private void StartCountDown()
+   {
+       if (_isCounting)
+       {
+           return;
+       }
+
+       if (_coroutine != null)
+       {
+           StopCoroutine(_coroutine);
+       }
+
+       _isCounting = true;
+       _coroutine = StartCoroutine(CountDown());
+   }
+
+   private IEnumerator CountDown()
+   {
+       var wait = new WaitForSeconds(_elapsedTime);
+
+       while (_isCounting)
+       {
+           GetCube();
+           yield return wait;
+       }
    }
 }

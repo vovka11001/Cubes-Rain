@@ -17,7 +17,7 @@ public class Cube : MonoBehaviour
     private readonly float _elapsedTime = 1f;
     private int _count = 0;
     private bool _isCounting;
-    private bool _isCollided = false;
+    private bool _isCollided;
     private float _lifeTime;
 
     private Coroutine _coroutine;
@@ -63,6 +63,11 @@ public class Cube : MonoBehaviour
             renderer.material.color = Color.white;
         }
     }
+    
+    private void OnDisable()
+    {
+        StopCountDown();
+    }
 
     private void StartCountDown()
     {
@@ -102,7 +107,11 @@ public class Cube : MonoBehaviour
             if (_count >= _lifeTime)
             {
                 StopCountDown();
-                TimerStopped?.Invoke(this);
+                
+                if (gameObject.activeInHierarchy)
+                {
+                    TimerStopped?.Invoke(this);
+                }
 
                 yield break;
             }
