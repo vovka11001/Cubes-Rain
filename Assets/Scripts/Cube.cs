@@ -24,31 +24,27 @@ public class Cube : MonoBehaviour
         if (_isCollided)
             return;
         
-        Platform platform = collision.gameObject.GetComponent<Platform>();
-
-        if (platform != null)
+        if (collision.gameObject.TryGetComponent(out Platform platform))
         {
-            _isCollided = true;
-
-            StartCountDown();
-
-            if (TryGetComponent(out Renderer renderer))
+            if (platform != null)
             {
-                if (renderer != null)
+                _isCollided = true;
+
+                StartCountDown();
+
+                if (TryGetComponent(out Renderer renderer))
                 {
-                    renderer.material.color = Random.ColorHSV();
+                    if (renderer != null)
+                    {
+                        renderer.material.color = Random.ColorHSV();
+                    }
                 }
             }
         }
     }
 
-    private void OnEnable()
+    private void Awake()
     {
-        _count = 0;
-        _isCounting = false;
-        _isCollided= false;
-        _lifeTime = Random.Range(_minLifeTime, _maxLifeTime + 1f);
-
         if (TryGetComponent(out Renderer renderer))
         {
             if (renderer != null)
@@ -64,6 +60,14 @@ public class Cube : MonoBehaviour
                 rigidbody.velocity = Vector3.zero;
             }
         }
+    }
+
+    private void OnEnable()
+    {
+        _count = 0;
+        _isCounting = false;
+        _isCollided= false;
+        _lifeTime = Random.Range(_minLifeTime, _maxLifeTime + 1f);
     }
     
     private void OnDisable()
