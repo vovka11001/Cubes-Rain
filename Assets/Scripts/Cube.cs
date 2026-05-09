@@ -8,11 +8,13 @@ using Random = UnityEngine.Random;
 
 public class Cube : MonoBehaviour
 {
+    private Rigidbody _rigidbody;
+    private Renderer _renderer;
+    
     private readonly float _minLifeTime = 2;
     private readonly float _maxLifeTime = 5;
     private readonly float _elapsedTime = 1f;
     private int _count;
-    private bool _isCounting;
     private bool _isCollided;
     private float _lifeTime;
 
@@ -26,40 +28,26 @@ public class Cube : MonoBehaviour
         
         if (collision.gameObject.TryGetComponent(out Platform platform))
         {
-            if (platform != null)
-            {
-                _isCollided = true;
+            _isCollided = true;
 
-                StartCountDown();
+            StartCountDown();
 
-                if (TryGetComponent(out Renderer renderer))
-                {
-                    if (renderer != null)
-                    {
-                        renderer.material.color = Random.ColorHSV();
-                    }
-                }
-            }
+            _renderer.material.color = Random.ColorHSV();
         }
     }
 
     private void Awake()
     {
-        var renderer =  GetComponent<Renderer>();
+        _rigidbody = GetComponent<Rigidbody>();
+        _renderer = GetComponent<Renderer>();
         
-        if (renderer != null)
-            renderer.material.color = Color.white;
-        
-        var rigidbody = GetComponent<Rigidbody>();
-        
-        if (rigidbody != null) 
-                rigidbody.velocity = Vector3.zero;
+        _renderer.material.color = Color.white;
+        _rigidbody.velocity = Vector3.zero;
     }
 
     private void OnEnable()
     {
         _count = 0;
-        _isCounting = false;
         _isCollided= false;
         _lifeTime = Random.Range(_minLifeTime, _maxLifeTime + 1f);
     }
@@ -71,13 +59,9 @@ public class Cube : MonoBehaviour
 
     private void StartCountDown()
     {
-        if (_isCounting)
-            return;
-        
         if (_coroutine != null) 
             StopCoroutine(_coroutine);
 
-        _isCounting = true;
         _coroutine = StartCoroutine(CountDown());
     }
 
@@ -88,30 +72,28 @@ public class Cube : MonoBehaviour
             StopCoroutine(_coroutine);
             _coroutine = null;
         }
-
-        _isCounting = false;
     }
 
     private IEnumerator CountDown()
     {
         var wait = new WaitForSeconds(_elapsedTime);
 
-        while (_isCounting)
+        for (float i = 0; i < _lifeTime; i++)
         {
             _count++;
 
             if (_count >= _lifeTime)
             {
                 StopCountDown();
-                
+            
                 if (gameObject.activeInHierarchy)
-                {
+                { 
                     TimerStopped?.Invoke(this);
                 }
-
+            
                 yield break;
             }
-
+            
             yield return wait;
         }
     }
